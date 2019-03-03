@@ -1,0 +1,59 @@
+</head>
+
+<body>
+
+<svg width="600px" height="400px" class="example">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth" viewBox="0 0 20 20">
+          <path d="M0,0 L0,6 L9,3 z" fill="#f00" />
+        </marker>
+    </defs>
+    <marker id="circle" markerWidth="4" markerHeight="4" refX="2" refY="2">
+        <circle cx="2" cy="2" r="2" stroke="none" fill="#f00"/>
+    </marker>
+    <polyline points="50,100 250,100 250,200 350,200" fill="none" stroke="#000" stroke-width="10" marker-end="url(#arrow)" marker-start="url(#circle)" marker-mid="url(#circle)" />
+    <path d="M50,100 l0,200 l50,0" stroke="#000" fill="none" stroke-width="10"  marker-end="url(#arrow)" marker-start="url(#circle)" marker-mid="url(#circle)" />
+    <line x1="50" y1="100" x2="220" y2="270" stroke="#000" stroke-width="10" marker-end="url(#arrow)" marker-start="url(#circle)" marker-mid="url(#circle)"/>
+</svg>
+
+</body>
+
+<script src = "js/d3.min.js"></script>
+
+<script> 
+
+d3.select('body')
+	.append('svg')
+	.attr('id','screen1')
+	.attr('height',300)
+	.attr('width',300)
+	.append('defs')
+	.append('marker')
+	.attr("markerHeight",15)
+	.attr("markerWidth",15)
+	.attr('id','arrowb')
+	.attr('viewBox','0 0 20 20')
+	.attr('orient','auto')
+	.attr('markerUnits', 'strokeWidth')
+	.attr('refX',0)
+	.attr('refY',3)
+	.append('path')
+	.attr('d', "M0,0 L0,6 L9,3 z")
+	.attr("stroke", 'none')
+	.attr("fill","red")
+
+
+	
+d3.select('#screen1')
+	.append('path')
+	.attr('id','path1')
+	.attr('d', 'M0 0 L100 100')
+	.attr('stroke','black')
+	.attr('marker-end','url(#arrowb)')
+	.attr('stroke-width','6')
+	
+
+
+</script>
+
+</html>
