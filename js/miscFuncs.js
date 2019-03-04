@@ -28,3 +28,32 @@ function createBlob(width = 32, height = 32, x0 = 16, y0 = 16, k = 6){
     }
     return output
 }
+
+// make a general convolution function
+function conv(src, kernel){
+    k_offset = [(Math.floor(kernel.width/2)), (Math.floor(kernel.height/2))]
+   var fail_counter = 0
+    buffer = new Im( {data : zeros(src.height, src.width), height : src.height, width : src.width } );
+   
+   for (var i = kernel.width; i < (src.width-kernel.width); i++){
+       for (var j = kernel.width; j < src.height-kernel.height; j++){
+           var temp_sum = 0
+           for (var p = 0; p < kernel.width; p++){
+               for (var q =0; q < kernel.height; q++){
+                   try{
+                       temp_sum += ( src.get( i+p-k_offset[0] , j+q-k_offset[1]) * kernel.get(p,q) ) ;
+                   }
+                   catch{
+                       fail_counter += 1
+                       print('fail')
+                       if (fail_counter > 600){
+                           return 'FAIL';
+                       }
+                   }
+               }
+           }
+           buffer.set(i,j,temp_sum)
+               }
+           }
+   return buffer
+}
