@@ -60,5 +60,19 @@ startData.srrf.draw(d3.select('body').append('svg').attr('height',h).attr('width
 d3.select('#screen1').append('g').attr('transform','translate(5,20)').append('text').text('Source Image').attr('fill','white')
 d3.select('#screen4').append('g').attr('transform','translate(5,20)').append('text').text('Mean Radiality').attr('fill','white')
 
+d3.select('body').on('keypress', function(){
+    console.log(d3.event.key)
+    if (d3.event.key == 'a'){
+        
+        var randX = (imSize-10)*Math.random() + 5
+        var randY = (imSize-10)*Math.random() + 5
+
+        startData.sum( createBlob(width = startData.width, height = startData.height, randX, randY , 5) )
+        startData.Gx = conv(startData, kx)
+        startData.Gy = conv(startData, ky)
+        startData.update(d3.select('#screen1'))
+    }
+})
+
 
 
