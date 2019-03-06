@@ -57,3 +57,15 @@ function conv(src, kernel){
            }
    return buffer
 }
+
+// normal random sample generator
+function randnBM() {
+    var u = 0, v = 0;
+    while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+}
+
+function addNoise(x){
+    return x + 0.01*randnBM();
+}
