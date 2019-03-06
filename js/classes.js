@@ -89,6 +89,57 @@ function Im (paramObj){
     }
 
 
+    self.getRadiality = function(i,j){
+
+        var svg = d3.select('#screen1')
+
+        var pixW = svg.attr('width')/self.width;
+        var pixH = svg.attr('height')/self.height;
+
+        // keep track of the x and y position of that pixel on the svg 
+        var x =  i * pixW ;
+        var y =  j * pixH ;
+
+        var radiality = 0;
+
+        getRingSamples(ringRad, nSamples).forEach( function(p,n){
+            // calculate a set of nSamples points around a ring of radius ringRad
+            // centered at the test point, then for each point check the gradient there
+            // and calculate the radiality
+            
+            // to make this more readable, the point on the ring will be (xi,yi)
+            var xi = p[0];
+            var yi = p[1];
+
+            // calculate ii and ji, the index of the ring point's gradient value in the Gx and Gy
+            // matricies 
+            var ii = i + Math.round(xi/pixW)
+            var ji = j + Math.round(yi/pixH);
+
+            // store the value of the local gradient vectors components at the ring point
+            var Gxi = self.Gx.get(ii,ji);
+            var Gyi = self.Gy.get(ii,ji);
+
+            // keep a scale constant to set the length of the displayed gradient vectors
+            var vectorScale = -60;
+
+            // calculate theta, the angle between the vector ri (from the test point xi,yi
+            // to the ring point) and Gi (the gradient vector at xi,yi)
+            var magAB = Math.sqrt(xi**2+yi**2) * Math.sqrt(Gxi**2+Gyi**2)
+            var AdotB = (xi*Gxi)+(yi*Gyi)
+            var theta = Math.acos(  AdotB / magAB  ) - Math.PI
+
+            // calculate the convergence as a function of theta
+            var ci = Math.sign(Math.cos(theta))*(1-Math.abs(Math.sin(theta)))**2
+
+            // add the convergence of this ring point to the ring's count of convergence
+            radiality += ci;
+        })
+
+        return radiality / nSamples;
+        
+    }
+
     self.overlayInit = function(svg){
         svg
             .on('mouseenter', mouseEnterFunc)
@@ -137,56 +188,60 @@ function Im (paramObj){
             var pixW = svg.attr('width')/self.width;
             var pixH = svg.attr('height')/self.height;
 
+            // find the index of the pixel over which the mouse hovers
             var i = Math.round( (mouse[0] - pixW/2 ) / (svg.attr('width')/self.width))
             var j = Math.round( (mouse[1] - pixH/2 ) / (svg.attr('height')/self.height));
+            // keep track of the x and y position of that pixel on the svg 
+            var x =  i * pixW ;
+            var y =  j * pixH ;
 
-            var x =  i * (svg.attr('width') /self.width) ;
-            var y =  j * (svg.attr('height') /self.height) ;
-
-
-            
+            // draw the cursor pixel and the gradient vectors
             svg
                 .select('#cursor')
                 .attr('x',x)
                 .attr('y',y)
             svg
                 .selectAll('.overlayLine')
+                .attr('stroke-opacity',0.5)        
                 .data(getRingSamples(ringRad, nSamples))
                 .attr('d', function(p,n){
+                            // calculate a set of nSamples points around a ring of radius ringRad
+                            // centered at the test point, then for each point check the gradient there
+                            // and calculate the radiality
+                            
+                            // to make this more readable, the point on the ring will be (xi,yi)
+                            var xi = p[0];
+                            var yi = p[1];
 
-                            var ii = i + Math.round(p[0]/pixW)
-                            var ji = j + Math.round(p[1]/pixH);
+                            // calculate ii and ji, the index of the ring point's gradient value in the Gx and Gy
+                            // matricies 
+                            var ii = i + Math.round(xi/pixW)
+                            var ji = j + Math.round(yi/pixH);
 
+                            // store the value of the local gradient vectors components at the ring point
                             var Gxi = self.Gx.get(ii,ji);
                             var Gyi = self.Gy.get(ii,ji);
 
-                            var xOffset = -60*Gxi //* self.get(i,j)
-                            var yOffset = -60*Gyi //* self.get(i,j)
+                            // keep a scale constant to set the length of the displayed gradient vectors
+                            var vectorScale = -60;
 
-                            if (debug){
-                                console.log('p',p[0],' ',p[1])
-                                console.log('i ',i,' j ',j)
-                                console.log('ii ',ii,' ji ',ji)
-                                console.log('xoffset ',xOffset,' yOffset ',yOffset)
-                            }
-
-                            var magAB = Math.sqrt(p[0]**2+p[1]**2) * Math.sqrt(Gxi**2+Gyi**2)
-                            var AdotB = (p[0]*Gxi)+(p[1]*Gyi)
+                            // calculate theta, the angle between the vector ri (from the test point xi,yi
+                            // to the ring point) and Gi (the gradient vector at xi,yi)
+                            var magAB = Math.sqrt(xi**2+yi**2) * Math.sqrt(Gxi**2+Gyi**2)
+                            var AdotB = (xi*Gxi)+(yi*Gyi)
                             var theta = Math.acos(  AdotB / magAB  ) - Math.PI
 
+                            // calculate the convergence as a function of theta
                             var ci = Math.sign(Math.cos(theta))*(1-Math.abs(Math.sin(theta)))**2
 
+                            // add the convergence of this ring point to the ring's count of convergence
                             ciMean += ci;
 
-                            //console.log(n,'theta', 360*theta/6.28, ci)
-
+                            // return a path for the vector to be displayed at this ring point
                             return `M ${x + p[0] + pixW/2} ${y + p[1] + pixH/2}
-                                    L ${x + p[0] + pixW/2 + xOffset} ${y + p[1] + pixH/2 + yOffset}
+                                    L ${x + p[0] + pixW/2 + Gxi*vectorScale} ${y + p[1] + pixH/2 + Gyi*vectorScale}
                                     `})
-                .attr('stroke-opacity',0.5)
-                //console.log(ciMean/nSamples)
-        
-                self.srrf.set(i,j,ciMean/nSamples)
+                self.srrf.set(i,j,ciMean/nSamples * self.get(i,j))
                 self.srrf.update(d3.select("#screen4"))
         }
 
@@ -201,4 +256,6 @@ function Im (paramObj){
             }
 
 }
+
+// I want to have a function that will calculate radiality at a point i,j
 

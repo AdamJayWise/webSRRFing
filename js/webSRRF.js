@@ -1,14 +1,16 @@
 // -----------------------
 console.log('webSRRF.js');
 // -----------------------
+var imSize = 45
+var svgPixelsPerPoint = 10;
+var w = imSize*svgPixelsPerPoint;
+var h = imSize*svgPixelsPerPoint;
 
 
-
-var imSize = 32
 var params = { data: zeros(imSize,imSize), width: imSize, height: imSize, type : 'interactive' };
 var startData = new Im(params);
 var nSamples = 8; // how many samples around the ring
-var ringRad = 10; //radius of ring to sample around in fake pixels
+var ringRad = 1*svgPixelsPerPoint; //radius of ring to sample around in fake pixels
 
 
 
@@ -17,9 +19,6 @@ startData.sum( createBlob(width = startData.width, height = startData.height, 16
 //startData.sum( createBlob(width = startData.width, height = startData.height, 12, 8 , 4) )
 
 // add an SVG canvas to the body
-
-var w = 16*20;
-var h = 16*20;
 
 d3.select('body')
     .append('svg')
@@ -58,7 +57,7 @@ startData.srrf = new Im({ data: zeros(imSize,imSize), width: imSize, height: imS
 startData.srrf.draw(d3.select('body').append('svg').attr('height',h).attr('width',w).attr('id','screen4'))
 
 d3.select('#screen1').append('g').attr('transform','translate(5,20)').append('text').text('Source Image').attr('fill','white')
-d3.select('#screen4').append('g').attr('transform','translate(5,20)').append('text').text('Mean Radiality').attr('fill','white')
+d3.select('#screen4').append('g').attr('transform','translate(5,20)').append('text').text('Mean Raw Radiality').attr('fill','white')
 
 d3.select('body').on('keypress', function(){
     console.log(d3.event.key)
@@ -71,6 +70,24 @@ d3.select('body').on('keypress', function(){
         startData.Gx = conv(startData, kx)
         startData.Gy = conv(startData, ky)
         startData.update(d3.select('#screen1'))
+    }
+
+    if (d3.event.key == 'r'){
+        for (var i = 0; i<imSize;i++){
+            for (var j =0; j<imSize;j++){
+                startData.srrf.set(i,j, startData.getRadiality(i,j))
+            }
+        }
+        startData.srrf.update(d3.select('#screen4'))
+    }
+
+    if (d3.event.key == 'i'){
+        for (var i = 0; i<imSize;i++){
+            for (var j =0; j<imSize;j++){
+                startData.srrf.set(i,j, startData.get(i,j)*startData.getRadiality(i,j))
+            }
+        }
+        startData.srrf.update(d3.select('#screen4'))
     }
 })
 
