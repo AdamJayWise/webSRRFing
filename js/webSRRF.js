@@ -13,7 +13,7 @@ var startData = new Im(params);
 // add random noise to starting data
 startData.data = startData.data.map(addNoise)
 
-var nSamples = 12; // how many samples around the ring
+var nSamples = 8; // how many samples around the ring
 var ringRad = 1*svgPixelsPerPoint; //radius of ring to sample around in fake pixels
 
 
